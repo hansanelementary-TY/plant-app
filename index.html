@@ -241,11 +241,27 @@ async function save() {
 
   let url = "";
 
-  if (file) {
-    const name = Date.now() + file.name;
-    await supabase.storage.from("plant-images").upload(name, file);
-    url = supabase.storage.from("plant-images").getPublicUrl(name).data.publicUrl;
+if (file) {
+  const fileName = Date.now() + "_" + file.name;
+
+  const { error } = await supabase.storage
+    .from("plant-images")
+    .upload(fileName, file, {
+      contentType: file.type
+    });
+
+  if (error) {
+    alert("업로드 실패: " + error.message);
+    console.error(error);
+    return;
   }
+
+  const { data } = supabase.storage
+    .from("plant-images")
+    .getPublicUrl(fileName);
+
+  url = data.publicUrl;
+}
 
   await supabase.from("observations").insert([{
     student_name: student,
