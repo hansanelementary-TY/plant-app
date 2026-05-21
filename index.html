@@ -154,7 +154,57 @@ const supabase = createClient(
 );
 
 let currentPlant="";
+ 
+// ✅ 삭제
+window.deleteRecord = async (id) => {
+  if (!confirm("정말 삭제하시겠습니까?")) return;
 
+  const { error } = await supabase
+    .from("observations")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("삭제 실패");
+    return;
+  }
+
+  alert("삭제 완료");
+  loadData();
+};
+ 
+// ✅ 수정
+window.editRecord = async (id) => {
+
+  const { data } = await supabase
+    .from("observations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  const newNote = prompt("내용 수정", data.note);
+  if (newNote === null) return;
+
+  const newHeight = prompt("키(cm) 수정", data.height || "");
+
+  const { error } = await supabase
+    .from("observations")
+    .update({
+      note: newNote,
+      height: newHeight
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("수정 실패");
+    return;
+  }
+
+  alert("수정 완료");
+  loadData();
+};
+ 
+ 
 function show(id){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  document.getElementById(id).classList.add("active");
@@ -209,13 +259,19 @@ window.loadData=async ()=>{
 
  const {data}=await query;
 
- list.innerHTML=data.map(d=>`
- <div>
+list.innerHTML=data.map(d=>`
+ <div style="margin-bottom:15px;">
  <b>${d.student_name}</b> (${d.plant_name})<br>
- ${d.date}<br>${d.note}
+ ${d.date}<br>
+ ${d.note}<br>
  ${d.image_url?`<img src="${d.image_url}">`:""}
+
+ <button onclick="editRecord('${d.id}')">✏️ 수정</button>
+ <button onclick="deleteRecord('${d.id}')">🗑 삭제</button>
+
  <hr>
- </div>`).join("");
+ </div>
+`).join("");
 };
 
 window.drawChart=async ()=>{
