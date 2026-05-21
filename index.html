@@ -247,7 +247,7 @@ if (file) {
   const ext = file.name.split('.').pop();
 
   // ✅ 안전한 파일명 생성 (한글 제거)
-  const fileName = Date.now() + "." + ext;
+ const fileName = Date.now() + "_" + Math.random().toString(36).substring(2) + "." + ext;
 
   const { error } = await supabase.storage
     .from("plant-images")
