@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>덩굴식물 관찰일지</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -202,8 +201,11 @@ img {
 
 </div>
 
-<script>
-const supabase = window.supabase.createClient(
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
   "https://libietxuqikakscgpojz.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpYmlldHh1cWlrYWtzY2dwb2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMTMwMzksImV4cCI6MjA5NDg4OTAzOX0.rTL3OmNFlPtEEwZbZLLzOoIdY9iYSXr4wzHSo7Kj5Xs"
 );
@@ -215,8 +217,10 @@ function show(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
+window.show = show;
 
 function goMain() { show("main"); }
+window.goMain = goMain;
 
 // 식물 선택
 function openForm(plant) {
@@ -225,6 +229,7 @@ function openForm(plant) {
   document.getElementById("date").valueAsDate = new Date();
   show("formPage");
 }
+window.openForm = openForm;
 
 // 저장
 async function save() {
@@ -253,6 +258,7 @@ async function save() {
 
   alert("저장 완료!");
 }
+window.save = save;
 
 // 기록 보기
 async function loadData() {
@@ -279,6 +285,7 @@ async function loadData() {
 
   document.getElementById("list").innerHTML = html;
 }
+window.loadData = loadData;
 
 // 그래프
 async function drawChart() {
@@ -307,6 +314,7 @@ async function drawChart() {
     }
   });
 }
+window.drawChart = drawChart;
 
 // AI 도우미
 function aiHelper() {
@@ -319,6 +327,7 @@ function aiHelper() {
   ];
   document.getElementById("ai").innerText = q[Math.floor(Math.random() * q.length)];
 }
+window.aiHelper = aiHelper;
 </script>
 
 </body>
