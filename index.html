@@ -212,143 +212,156 @@ const supabase = createClient(
 
 let currentPlant = "";
 
-// 화면 전환
-function show(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+// 화면 전환  row215
+function show(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
 }
-window.show = show;
-
-function goMain() { show("main"); }
-window.goMain = goMain;
+window.show=show;
+window.goMain=()=>show("main");
 
 // 식물 선택
-function openForm(plant) {
-  currentPlant = plant;
-  document.getElementById("plantTitle").innerText = plant;
-  document.getElementById("date").valueAsDate = new Date();
-  show("formPage");
+function openForm(p){
+ currentPlant=p;
+ document.getElementById("plantTitle").innerText=p;
+ document.getElementById("date").valueAsDate=new Date();
+ show("formPage");
 }
-window.openForm = openForm;
+window.openForm=openForm;
 
-// 저장
-async function save() {
-  const student = document.getElementById("student").value;
-  const date = document.getElementById("date").value;
-  const height = document.getElementById("height").value;
-  const note = document.getElementById("note").value;
-  const file = document.getElementById("image").files[0];
+// ✅ 저장
+async function save(){
+ const student=document.getElementById("student").value;
+ const date=document.getElementById("date").value;
+ const height=document.getElementById("height").value;
+ const note=document.getElementById("note").value;
+ const file=document.getElementById("image").files[0];
 
-  let url = "";
+ let url="";
 
-if (file) {
+ if(file){
+   const ext=file.name.split('.').pop();
+   const fileName = Date.now() + "_" + Math.random().toString(36).substring(2) + "." + ext;
 
-  // ✅ 확장자만 추출
-  const ext = file.name.split('.').pop();
+   const {error}=await supabase.storage
+   .from("plant-images")
+   .upload(fileName,file,{contentType:file.type});
 
-  // ✅ 안전한 파일명 생성 (한글 제거)
- const fileName = Date.now() + "_" + Math.random().toString(36).substring(2) + "." + ext;
+   if(error){ alert(error.message); return; }
 
-  const { error } = await supabase.storage
-    .from("plant-images")
-    .upload(fileName, file, {
-      contentType: file.type
-    });
+   url=supabase.storage.from("plant-images")
+   .getPublicUrl(fileName).data.publicUrl;
+ }
 
-  if (error) {
-    alert("업로드 실패: " + error.message);
-    console.error(error);
-    return;
-  }
+ await supabase.from("observations").insert([{
+   student_name:student,
+   plant_name:currentPlant,
+   date,
+   height,
+   note,
+   image_url:url
+ }]);
 
-  const { data } = supabase.storage
-    .from("plant-images")
-    .getPublicUrl(fileName);
-
-  url = data.publicUrl;
+ alert("저장 완료");
 }
+window.save=save;
 
-  await supabase.from("observations").insert([{
-    student_name: student,
-    plant_name: currentPlant,
-    date: date,
-    height: height,
-    note: note,
-    image_url: url
-  }]);
+// ✅ 기록 불러오기 (필터 포함)
+async function loadData(){
+ show("listPage");
 
-  alert("저장 완료!");
+ let query=supabase.from("observations").select("*").order("date");
+
+ const student=document.getElementById("filterStudent").value;
+ const plant=document.getElementById("filterPlant").value;
+
+ if(student) query=query.eq("student_name",student);
+ if(plant) query=query.eq("plant_name",plant);
+
+ const {data}=await query;
+
+ let html="";
+
+ data.forEach(d=>{
+   html+=`
+   <div>
+   <b>${d.student_name}</b> (${d.plant_name})<br>
+   ${d.date}<br>
+   ${d.note}<br>
+   ${d.image_url?`<img src="${d.image_url}">`:""}
+
+   <button onclick="editRecord('${d.id}')">✏️ 수정</button>
+   <button onclick="deleteRecord('${d.id}')">🗑 삭제</button>
+   <hr>
+   </div>`;
+ });
+
+ document.getElementById("list").innerHTML=html;
 }
-window.save = save;
+window.loadData=loadData;
 
-// 기록 보기
-async function loadData() {
-  show("listPage");
+// ✅ 삭제
+async function deleteRecord(id){
+ if(!confirm("삭제하시겠습니까?")) return;
 
-  let query = supabase.from("observations").select("*").order("date");
-
-  const filter = document.getElementById("filterStudent").value;
-  if (filter) query = query.eq("student_name", filter);
-
-  const { data } = await query;
-
-  let html = "";
-  data.forEach(d => {
-    html += `
-    <div>
-    <b>${d.student_name}</b> (${d.plant_name})<br>
-    ${d.date}<br>
-    ${d.note}<br>
-    ${d.image_url ? `<img src="${d.image_url}">` : ""}
-    <hr>
-    </div>`;
-  });
-
-  document.getElementById("list").innerHTML = html;
+ await supabase.from("observations").delete().eq("id",id);
+ alert("삭제 완료");
+ loadData();
 }
-window.loadData = loadData;
+window.deleteRecord=deleteRecord;
 
-// 그래프
-async function drawChart() {
-  show("chartPage");
+// ✅ 수정
+async function editRecord(id){
+ const {data}=await supabase.from("observations")
+ .select("*").eq("id",id).single();
 
-  const plant = document.getElementById("chartPlant").value;
+ const newNote=prompt("내용 수정",data.note);
+ if(newNote===null) return;
 
-  const { data } = await supabase
-    .from("observations")
-    .select("*")
-    .eq("plant_name", plant)
-    .order("date");
+ await supabase.from("observations")
+ .update({note:newNote})
+ .eq("id",id);
 
-  const labels = data.map(d => d.date);
-  const heights = data.map(d => d.height || 0);
-
-  new Chart(document.getElementById("chart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: plant + " 성장",
-        data: heights,
-        borderColor: "green"
-      }]
-    }
-  });
+ alert("수정 완료");
+ loadData();
 }
-window.drawChart = drawChart;
+window.editRecord=editRecord;
 
-// AI 도우미
-function aiHelper() {
-  const q = [
-    "잎의 크기는 어떻게 변했나요?",
-    "줄기는 얼마나 길어졌나요?",
-    "어제와 무엇이 달라졌나요?",
-    "꽃이나 열매가 생겼나요?",
-    "색깔은 어떤가요?"
-  ];
-  document.getElementById("ai").innerText = q[Math.floor(Math.random() * q.length)];
+// ✅ 그래프
+async function drawChart(){
+ show("chartPage");
+
+ const plant=document.getElementById("chartPlant").value;
+
+ const {data}=await supabase
+ .from("observations")
+ .select("*")
+ .eq("plant_name",plant)
+ .order("date");
+
+ const labels=data.map(d=>d.date);
+ const heights=data.map(d=>d.height||0);
+
+ new Chart(document.getElementById("chart"),{
+  type:"line",
+  data:{labels,datasets:[{label:plant,data:heights,borderColor:"green"}]}
+ });
 }
-window.aiHelper = aiHelper;
+window.drawChart=drawChart;
+
+// ✅ AI
+function aiHelper(){
+ const q=[
+ "잎의 크기는?",
+ "줄기는 얼마나 자랐나요?",
+ "변화는?",
+ "색깔은?",
+ "특징은?"
+ ];
+ document.getElementById("ai").innerText=q[Math.random()*q.length|0];
+}
+window.aiHelper=aiHelper;
+
 </script>
 
 </body>
