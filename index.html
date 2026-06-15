@@ -182,38 +182,79 @@ window.openForm = (p)=>{
 };
 
 // 저장
-window.save = async ()=>{
- const file = image.files[0];
- let url="";
+window.save = async () => {
 
- if(file){
-  const ext = file.name.split('.').pop();
-  const fileName = Date.now()+"."+ext;
+  try {
+    // ✅ 값 가져오기
+    const studentVal = document.getElementById("student").value;
+    const dateVal = document.getElementById("date").value;
+    const heightVal = document.getElementById("height").value;
+    const noteVal = document.getElementById("note").value;
+    const file = document.getElementById("image").files[0];
 
-  const { error } = await supabase.storage
-  .from("plant-images")
-  .upload(fileName,file,{contentType:file.type});
+    // ✅ 필수값 체크
+    if (!studentVal || !dateVal || !noteVal) {
+      alert("학생, 날짜, 관찰내용은 반드시 입력하세요!");
+      return;
+    }
 
-  if(error){
-   alert("업로드 실패: "+error.message);
-   return;
+    let imageUrl = "";
+
+    // ✅ 이미지 업로드
+    if (file) {
+      const ext = file.name.split('.').pop();
+      const fileName = Date.now() + "_" + Math.random().toString(36).slice(2) + "." + ext;
+
+      const { error: uploadError } = await supabase.storage
+        .from("plant-images")
+        .upload(fileName, file, {
+          contentType: file.type
+        });
+
+      if (uploadError) {
+        console.error("업로드 오류:", uploadError);
+        alert("사진 업로드 실패: " + uploadError.message);
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from("plant-images")
+        .getPublicUrl(fileName);
+
+      imageUrl = data.publicUrl;
+    }
+
+    // ✅ DB 저장
+    const { error: insertError } = await supabase
+      .from("observations")
+      .insert([{
+        student_name: studentVal,
+        plant_name: currentPlant,
+        date: dateVal,
+        height: heightVal || null,
+        note: noteVal,
+        image_url: imageUrl
+      }]);
+
+    if (insertError) {
+      console.error("DB 저장 오류:", insertError);
+      alert("저장 실패: " + insertError.message);
+      return;
+    }
+
+    alert("✅ 저장 완료!");
+
+    // ✅ 입력 초기화
+    document.getElementById("note").value = "";
+    document.getElementById("height").value = "";
+    document.getElementById("image").value = "";
+
+  } catch (err) {
+    console.error("전체 오류:", err);
+    alert("예상치 못한 오류 발생");
   }
-
-  url = supabase.storage.from("plant-images")
-  .getPublicUrl(fileName).data.publicUrl;
- }
-
- await supabase.from("observations").insert([{
-  student_name:student.value,
-  plant_name:currentPlant,
-  date:date.value,
-  height:height.value,
-  note:note.value,
-  image_url:url
- }]);
-
- alert("저장 완료!");
 };
+
 
 // 기록 보기
 window.loadData = async ()=>{
