@@ -8,33 +8,76 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family:sans-serif; background:#e8f5e9; margin:0; }
-.container { max-width:500px; margin:auto; padding:10px; }
-h1 { text-align:center; color:#2e7d32; }
-
-.grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-
-.plant-btn { background:#66bb6a; color:white; padding:20px; border-radius:12px; text-align:center; }
-.icon { font-size:40px; margin-bottom:8px; }
-
-.card { background:white; padding:15px; border-radius:12px; margin-top:10px; }
-
-input,select,textarea,button{
- width:100%; box-sizing:border-box; margin-top:8px; padding:10px; font-size:16px;
+body {
+  font-family: sans-serif;
+  background: #f1f8e9;
+  margin: 0;
 }
 
-button{ background:#43a047; color:white; border:none; border-radius:8px; }
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 10px;
+}
 
-img{ width:100%; border-radius:10px; }
+h1 {
+  text-align: center;
+  color: #558b2f;
+}
 
-.page{ display:none; }
-.active{ display:block; }
+/* 식물 버튼 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
 
-.gallery img{ margin-top:10px; }
+.btn {
+  background: #aed581;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.icon {
+  font-size: 40px;
+}
+
+/* 카드 */
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+input, select, textarea, button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+}
+
+button {
+  background: #7cb342;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+img {
+  width: 100%;
+  margin-top: 5px;
+  border-radius: 10px;
+}
+
+.page { display:none; }
+.active { display:block; }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <h1>🌱 덩굴식물 관찰일지</h1>
@@ -42,28 +85,32 @@ img{ width:100%; border-radius:10px; }
 <!-- ✅ 메인 -->
 <div id="main" class="page active">
 <div class="grid">
-<div class="plant-btn" onclick="openForm('작두콩')"><div class="icon">🌿</div>작두콩</div>
-<div class="plant-btn" onclick="openForm('향기밤나팔꽃')"><div class="icon">🌸</div>향기밤나팔꽃</div>
-<div class="plant-btn" onclick="openForm('하늘마')"><div class="icon">🍃</div>하늘마</div>
-<div class="plant-btn" onclick="openForm('조롱박')"><div class="icon">🎃</div>조롱박</div>
-<div class="plant-btn" onclick="openForm('강낭콩')"><div class="icon">🫘</div>강낭콩</div>
-<div class="plant-btn" onclick="openForm('수세미')"><div class="icon">🥒</div>수세미</div>
+<div class="btn" onclick="openForm('작두콩')"><div class="icon">🌿</div>작두콩</div>
+<div class="btn" onclick="openForm('향기밤나팔꽃')"><div class="icon">🌸</div>향기밤나팔꽃</div>
+<div class="btn" onclick="openForm('하늘마')"><div class="icon">🍃</div>하늘마</div>
+<div class="btn" onclick="openForm('조롱박')"><div class="icon">🎃</div>조롱박</div>
+<div class="btn" onclick="openForm('강낭콩')"><div class="icon">🫘</div>강낭콩</div>
+<div class="btn" onclick="openForm('수세미')"><div class="icon">🥒</div>수세미</div>
 </div>
 
-<button onclick="loadData()">📒 기록 보기</button>
-<button onclick="show('chartPage')">📊 그래프</button>
-<button onclick="show('dashboardPage');loadDashboard()">👩‍🏫 교사용 대시보드</button>
-<button onclick="show('galleryPage');loadGallery()">🖼 갤러리</button>
+<button onclick="show('listPage');loadData()">📒 기록보기</button>
+<button onclick="show('chartPage')">📊 성장그래프</button>
 </div>
 
 <!-- ✅ 입력 -->
 <div id="formPage" class="page">
 <div class="card">
+
 <h3 id="plantTitle"></h3>
 
 <select id="student">
-<option>방가람</option><option>김시우</option><option>김도하</option>
-<option>김도후</option><option>문수민</option><option>위주청</option><option>박지준</option>
+<option>방가람</option>
+<option>김시우</option>
+<option>김도하</option>
+<option>김도후</option>
+<option>문수민</option>
+<option>위주청</option>
+<option>박지준</option>
 </select>
 
 <input type="date" id="date">
@@ -72,34 +119,20 @@ img{ width:100%; border-radius:10px; }
 <input type="file" id="image">
 
 <button onclick="save()">저장하기</button>
-<button onclick="goMain()">뒤로가기</button>
+<button onclick="show('main')">뒤로가기</button>
+
 </div>
 
 <div class="card">
-<button onclick="aiFeedback()">🤖 AI 피드백</button>
-<div id="ai"></div>
+<button onclick="helper()">🤖 관찰 도우미</button>
+<div id="helper"></div>
 </div>
 </div>
 
 <!-- ✅ 기록 -->
 <div id="listPage" class="page">
 <div class="card">
-
-<select id="filterStudent" onchange="loadData()">
-<option value="">전체 학생</option>
-<option>방가람</option><option>김시우</option><option>김도하</option>
-<option>김도후</option><option>문수민</option><option>위주청</option><option>박지준</option>
-</select>
-
-<select id="filterPlant" onchange="loadData()">
-<option value="">전체 식물</option>
-<option>작두콩</option><option>향기밤나팔꽃</option>
-<option>하늘마</option><option>조롱박</option>
-<option>강낭콩</option><option>수세미</option>
-</select>
-
-<button onclick="goMain()">홈</button>
-
+<button onclick="show('main')">홈</button>
 <div id="list"></div>
 </div>
 </div>
@@ -107,40 +140,21 @@ img{ width:100%; border-radius:10px; }
 <!-- ✅ 그래프 -->
 <div id="chartPage" class="page">
 <div class="card">
-<select id="chartPlant">
-<option>작두콩</option><option>향기밤나팔꽃</option>
-<option>하늘마</option><option>조롱박</option>
-<option>강낭콩</option><option>수세미</option>
+
+<select id="plantSelect">
+<option>작두콩</option>
+<option>향기밤나팔꽃</option>
+<option>하늘마</option>
+<option>조롱박</option>
+<option>강낭콩</option>
+<option>수세미</option>
 </select>
-<button onclick="drawChart()">그래프</button>
-<button onclick="goMain()">홈</button>
+
+<button onclick="drawChart()">그래프 보기</button> 
+<button onclick="show('main')">홈</button>
+
 <canvas id="chart"></canvas>
-</div>
-</div>
 
-<!-- ✅ 대시보드 -->
-<div id="dashboardPage" class="page">
-<div class="card">
-<h3>학생별 기록 수</h3>
-<canvas id="dashChart"></canvas>
-<button onclick="goMain()">홈</button>
-</div>
-</div>
-
-<!-- ✅ 갤러리 -->
-<div id="galleryPage" class="page">
-<div class="card">
-
-<select id="galleryPlant" onchange="loadGallery()">
-<option value="">전체 식물</option>
-<option>작두콩</option><option>향기밤나팔꽃</option>
-<option>하늘마</option><option>조롱박</option>
-<option>강낭콩</option><option>수세미</option>
-</select>
-
-<button onclick="goMain()">홈</button>
-
-<div id="gallery" class="gallery"></div>
 </div>
 </div>
 
@@ -148,92 +162,44 @@ img{ width:100%; border-radius:10px; }
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-const supabase = createClient(
-  "https://libietxuqikakscgpojz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpYmlldHh1cWlrYWtzY2dwb2p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMTMwMzksImV4cCI6MjA5NDg4OTAzOX0.rTL3OmNFlPtEEwZbZLLzOoIdY9iYSXr4wzHSo7Kj5Xs"
-);
 
-let currentPlant="";
- 
-// ✅ 삭제
-window.deleteRecord = async (id) => {
-  if (!confirm("정말 삭제하시겠습니까?")) return;
+const supabase = createClient("https://libietxuqikakscgpojz.supabase.co","sb_publishable_-VuK4qBnW1MLplXEm6gUGw_xDENugaK");
 
-  const { error } = await supabase
-    .from("observations")
-    .delete()
-    .eq("id", id);
+let currentPlant = "";
 
-  if (error) {
-    alert("삭제 실패");
-    return;
-  }
-
-  alert("삭제 완료");
-  loadData();
-};
- 
-// ✅ 수정
-window.editRecord = async (id) => {
-
-  const { data } = await supabase
-    .from("observations")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  const newNote = prompt("내용 수정", data.note);
-  if (newNote === null) return;
-
-  const newHeight = prompt("키(cm) 수정", data.height || "");
-
-  const { error } = await supabase
-    .from("observations")
-    .update({
-      note: newNote,
-      height: newHeight
-    })
-    .eq("id", id);
-
-  if (error) {
-    alert("수정 실패");
-    return;
-  }
-
-  alert("수정 완료");
-  loadData();
-};
- 
- 
-function show(id){
+// 화면
+window.show = (id)=>{
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  document.getElementById(id).classList.add("active");
-}
-window.show=show;
-window.goMain=()=>show("main");
+};
 
-window.openForm=(p)=>{
+// 식물 선택
+window.openForm = (p)=>{
  currentPlant=p;
- plantTitle.innerText=p;
- date.valueAsDate=new Date();
+ document.getElementById("plantTitle").innerText=p;
+ document.getElementById("date").valueAsDate=new Date();
  show("formPage");
 };
 
-window.save=async ()=>{
- const file=image.files[0];
+// 저장
+window.save = async ()=>{
+ const file = image.files[0];
  let url="";
 
  if(file){
-  const ext=file.name.split('.').pop();
-  const fileName= Date.now() + "_" + Math.random().toString(36).substring(2) + "." + ext;
+  const ext = file.name.split('.').pop();
+  const fileName = Date.now()+"."+ext;
 
-  const {error}=await supabase.storage
+  const { error } = await supabase.storage
   .from("plant-images")
   .upload(fileName,file,{contentType:file.type});
 
-  if(error){ alert(error.message); return; }
+  if(error){
+   alert("업로드 실패: "+error.message);
+   return;
+  }
 
-  url=supabase.storage.from("plant-images")
+  url = supabase.storage.from("plant-images")
   .getPublicUrl(fileName).data.publicUrl;
  }
 
@@ -246,94 +212,60 @@ window.save=async ()=>{
   image_url:url
  }]);
 
- alert("저장 완료");
+ alert("저장 완료!");
 };
 
-window.loadData=async ()=>{
- show("listPage");
+// 기록 보기
+window.loadData = async ()=>{
+ const { data } = await supabase
+ .from("observations")
+ .select("*")
+ .order("date",{ascending:false});
 
- let query=supabase.from("observations").select("*").order("date");
-
- if(filterStudent.value) query=query.eq("student_name",filterStudent.value);
- if(filterPlant.value) query=query.eq("plant_name",filterPlant.value);
-
- const {data}=await query;
-
-list.innerHTML=data.map(d=>`
- <div style="margin-bottom:15px;">
+ list.innerHTML = data.map(d=>`
+ <div>
  <b>${d.student_name}</b> (${d.plant_name})<br>
- ${d.date}<br>
- ${d.note}<br>
+ ${d.date}<br>${d.note}
  ${d.image_url?`<img src="${d.image_url}">`:""}
-
- <button onclick="editRecord('${d.id}')">✏️ 수정</button>
- <button onclick="deleteRecord('${d.id}')">🗑 삭제</button>
-
  <hr>
  </div>
-`).join("");
+ `).join("");
 };
 
-window.drawChart=async ()=>{
- show("chartPage");
+// 그래프
+window.drawChart = async ()=>{
+ const plant = plantSelect.value;
 
- const {data}=await supabase.from("observations")
- .select("*").eq("plant_name",chartPlant.value);
+ const { data } = await supabase
+ .from("observations")
+ .select("*")
+ .eq("plant_name",plant);
 
  new Chart(chart,{
   type:"line",
   data:{
    labels:data.map(d=>d.date),
-   datasets:[{data:data.map(d=>d.height||0),borderColor:"green"}]
+   datasets:[{
+    data:data.map(d=>d.height||0),
+    borderColor:"#4caf50"
+   }]
   }
  });
 };
 
-window.loadDashboard=async ()=>{
- const {data}=await supabase.from("observations").select("*");
-
- const count={};
- data.forEach(d=>{count[d.student_name]=(count[d.student_name]||0)+1});
-
- new Chart(dashChart,{
-  type:"bar",
-  data:{
-   labels:Object.keys(count),
-   datasets:[{data:Object.values(count),backgroundColor:"green"}]
-  }
- });
-};
-
-window.loadGallery=async ()=>{
- let query=supabase.from("observations").select("*");
-
- if(galleryPlant.value) query=query.eq("plant_name",galleryPlant.value);
-
- const {data}=await query;
-
- gallery.innerHTML=data
- .filter(d=>d.image_url)
- .map(d=>`<img src="${d.image_url}">`).join("");
-};
-
-// ✅ AI 피드백
-window.aiFeedback=()=>{
- const text=note.value;
-
- if(!text){
-  ai.innerText="관찰 내용을 먼저 써보세요 😊";
-  return;
- }
-
- let msg="좋은 관찰이에요! ";
-
- if(text.includes("잎")) msg+="잎의 변화를 잘 봤네요. ";
- if(text.includes("길")) msg+="길이 변화를 잘 기록했어요. ";
- if(text.length<10) msg+="조금 더 자세히 써보면 좋아요!";
-
- ai.innerText=msg;
+// 도우미
+window.helper = ()=>{
+ const msg=[
+ "잎의 크기와 색을 살펴보세요!",
+ "줄기의 길이를 재보세요!",
+ "어제와 달라진 점은 무엇인가요?",
+ "꽃이나 열매가 생겼나요?",
+ "촉감이나 냄새도 느껴보세요!"
+ ];
+ helper.innerText = msg[Math.random()*msg.length|0];
 };
 </script>
 
 </body>
 </html>
+
